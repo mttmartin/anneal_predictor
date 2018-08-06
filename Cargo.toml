@@ -1,0 +1,6 @@
+[package]
+name = "anneal_predictor"
+version = "0.1.0"
+authors = ["Matthew <matthew@mttmartin.com>"]
+
+[dependencies]
