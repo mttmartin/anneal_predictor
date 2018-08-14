@@ -260,13 +260,9 @@ impl AnnealSimulation {
 		} else if substr1 == "TT" && substr2 == "AT" {
 			deltaS = -6.3;
 			deltaH = 0.8;
+		} else {
+			println!("Warning: Duplex pair not found: {:?} and {:?}", substr1, substr2);
 		}
-
-		/*if deltaS == 0 || deltaH==0
-		{
-		//NSLog(@"Error: getThermoData:Duplex pair not found");
-		return -1.0;
-		}*/
 
 		// Units above are in J/L*mol for ease of entry--convert to kJ/mol
 		deltaS = deltaS/1000.0;
