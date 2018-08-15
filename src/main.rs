@@ -5,11 +5,20 @@ struct AnnealSimulation {
 }
 
 impl AnnealSimulation {
-	fn deltaG_dinucleotide(&self, substr1: String, substr2: String) -> f64 {
+	fn deltaG_dinucleotide(&self, substr1_initial: String, substr2_initial: String) -> f64 {
 		let mut deltaS = 0.0;
 		let mut deltaH = 0.0;
 
-		if substr1 ==  "AA" && substr2 == "TT" {
+		let mut substr1 = substr1_initial.clone();
+		let mut substr2 = substr2_initial.clone();
+		if substr1 == "AC" || substr1 == "AG" || substr1 == "TG" || substr1 == "TC"  || substr1 == "CC" {
+			// Assuming that this is physically valid
+			// let t = s.chars().rev().collect::<String>();
+			substr1 = substr1_initial.chars().rev().collect::<String>();
+			substr2 = substr2_initial.chars().rev().collect::<String>();
+		}
+
+		if (substr1 == "AA" && substr2 == "TT") || (substr1 == "TT" && substr2 == "AA") {
 			deltaS =  -92.9;
 			deltaH = -33.1;
 		} else if substr1 == "AT" && substr2 == "TA" {
@@ -36,7 +45,7 @@ impl AnnealSimulation {
 		} else if substr1 == "GC" && substr2 == "CG" {
 			deltaS =  -102.1;
 			deltaH = -41.0;
-		} else if substr1 == "GG" && substr2 == "CC" {
+		} else if (substr1 == "GG" && substr2 == "CC") || (substr1 == "CC" && substr2 == "GG") {
 			deltaS =  -83.3;
 			deltaH = -33.5;
 		}
@@ -270,18 +279,19 @@ impl AnnealSimulation {
 		deltaG
 	}
 
-fn initiation_termination_deltaG(&self, template_dinucleotide: String, oligo_dinucleotide: String) -> f64 {
-	if (template_dinucleotide[0..0].to_string() == "A" && oligo_dinucleotide[0..0].to_string() == "T") || (template_dinucleotide[0..0].to_string() == "T" && oligo_dinucleotide[0..0].to_string() == "A") {
+fn initiation_termination_deltaG(&self, template_nucleotide: String, oligo_nucleotide: String) -> f64 {
+	if (template_nucleotide == "A" && oligo_nucleotide == "T") || (template_nucleotide == "T" && oligo_nucleotide == "A") {
 		let deltaH = 9.62;
 		let deltaS = 17.15/1000.0;
 		let deltaGinit = deltaH - (self.temperature*deltaS);
 		deltaGinit
-	} else if (template_dinucleotide[0..0].to_string() == "G" && oligo_dinucleotide[0..0].to_string() == "C") || (template_dinucleotide[0..0].to_string() == "C" && oligo_dinucleotide[0..0].to_string() == "G") {
+	} else if (template_nucleotide == "G" && oligo_nucleotide == "C") || (template_nucleotide == "C" && oligo_nucleotide == "G") {
 		let deltaH = 0.4184;
 		let deltaS = -11.72/1000.0;
 		let deltaGinit = deltaH - (self.temperature*deltaS);
 		deltaGinit
 	} else {
+		println!("Warning: Unknown termination pair {:?} and {:?}", template_nucleotide, oligo_nucleotide);
 		0.0
 	}
 }
@@ -290,19 +300,18 @@ fn calc_deltaG(&self, template_piece: String) -> f64{
 	let mut deltaG = 0.0;
 	println!("template piece: {:?}", template_piece);
 	for i in 0..(self.oligo.len()-1) {
-		println!("here");
 		let mut initiation_deltaG = 0.0;
 		let template_dinucleotide = self.template[i..i+2].to_string();
 		let oligo_dinucleotide = self.oligo[i..i+2].to_string();
 		let mut dinucleotide_deltaG = self.deltaG_dinucleotide(template_dinucleotide.clone(), oligo_dinucleotide.clone());
 
 		if i == 0 {
-			initiation_deltaG = self.initiation_termination_deltaG(template_dinucleotide[0..0].to_string(), oligo_dinucleotide[0..0].to_string());
+			initiation_deltaG = self.initiation_termination_deltaG(template_dinucleotide[0..1].to_string(), oligo_dinucleotide[0..1].to_string());
+
 		} else if i == (self.oligo.len()-2) {
-			initiation_deltaG = self.initiation_termination_deltaG(template_dinucleotide[1..1].to_string(), oligo_dinucleotide[1..1].to_string());
+			initiation_deltaG = self.initiation_termination_deltaG(template_dinucleotide[1..2].to_string(), oligo_dinucleotide[1..2].to_string());
 		}
 		deltaG = deltaG + dinucleotide_deltaG + initiation_deltaG;
-		println!("Current deltaG: {:?}", deltaG);
 
 	}
 	deltaG
