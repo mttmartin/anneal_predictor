@@ -323,8 +323,6 @@ fn calc_deltaG(&self, template_piece: String) -> f64{
 
 
 fn main() {
-	//let seq1 = "CCGATATTTCACGAATTAATTTTCACGTTCACGTTCACGTTCAGTTCA".to_string();
-	//let seq2 = "AATTTTAAATGCAAGT".to_string();
 	let seq1 = "CGTTGAA".to_string();
 	let seq2 = "GCAACT".to_string();
 	let temperature = 310.15;
@@ -332,4 +330,20 @@ fn main() {
 	let lowest_delta_G = simulation.lowest_deltaG();
 
 	println!("Lowest deltaG is {:?}", lowest_delta_G);
+}
+
+
+#[cfg(test)]
+mod tests {
+	use AnnealSimulation;
+	#[test]
+	fn known_example() {
+		let seq1 = "CGTTGAA".to_string();
+		let seq2 = "GCAACT".to_string();
+		let temperature = 310.15;
+		let simulation = AnnealSimulation { template: seq1, oligo: seq2, temperature };
+		let lowest_delta_G = simulation.lowest_deltaG();
+		let acceptable_range = -20.0..-22.0;
+		assert!(lowest_delta_G <= acceptable_range.start && lowest_delta_G > acceptable_range.end);
+	}
 }
